@@ -447,4 +447,3 @@ end
 
 -- [[ INICIO ]]
 ShowKeySystem()
-Arregla éste Script lua
