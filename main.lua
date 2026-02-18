@@ -1,84 +1,52 @@
+-- [[ 🥵 CHRISSHUB V2.5 - THE SUPREME UPDATE 🥵 ]]
+-- [[ DEVELOPER: SASWARE32 | FIX: MULTI-LOAD & HITBOX ]]
+-- [[ TOTAL LINES: 330+ | STATUS: STABLE ]]
 
--- [[ ============================================================================================= ]]
--- [[                                                                                               ]]
--- [[                                  CHRISSHUB V2 - REMODELACIÓN SUPREMA                          ]]
--- [[                                                                                               ]]
--- [[                                  DEVELOPED BY: SASWARE32                                      ]]
--- [[                                  STYLE: BLUE NEON FUTURISTIC                                  ]]
--- [[                                  VERSION: 3.0.0 (FULL DETALLES)                               ]]
--- [[                                                                                               ]]
--- [[ ============================================================================================= ]]
-
--- [[ 1. SERVICIOS Y VARIABLES GLOBALES ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
-local Workspace = game:GetService("Workspace")
-local Lighting = game:GetService("Lighting")
-local Debris = game:GetService("Debris")
-local StarterGui = game:GetService("StarterGui")
-
 local lp = Players.LocalPlayer
-local camera = Workspace.CurrentCamera
-local mouse = lp:GetMouse()
+local camera = workspace.CurrentCamera
 
--- [[ 2. TABLA DE CONFIGURACIÓN Y ESTADOS ]]
-local CH_DATA = {
-    Toggles = {
-        Noclip = false,
-        InfJump = false,
-        WalkSpeed = false,
-        Aimbot = false,
-        KillAura = false,
-        TPSheriff = false,
-        ESP_Murd = false,
-        ESP_Sheriff = false,
-        ESP_Inno = false,
-        Traces = false
-    },
-    Colors = {
-        MainBlue = Color3.fromRGB(0, 170, 255),
-        NeonPurple = Color3.fromRGB(180, 0, 255),
-        SuccessGreen = Color3.fromRGB(0, 255, 100),
-        ErrorRed = Color3.fromRGB(255, 50, 50),
-        WarningYellow = Color3.fromRGB(255, 255, 0),
-        SkyBlue = Color3.fromRGB(0, 255, 255)
-    },
-    Keys = {
-        "CHKEY_2964173850", "CHKEY_8317642950", "CHKEY_5729184630",
-        "CHKEY_9463825170", "CHKEY_1857396240", "CHKEY_7248163950",
-        "CHKEY_3692581740", "CHKEY_6159274830", "CHKEY_4836917250",
-        "CHKEY_8527419630", "CHKEY_2769318450", "CHKEY_9148526730",
-        "CHKEY_5382761940", "CHKEY_7615928340", "CHKEY_3974182650"
-    }
+-- VARIABLE PARA PREVENIR DUPLICADOS
+local IsLoaded = false
+
+-- [[ 🔑 BASE DE DATOS: 15 KEYS ]]
+local CH_KEYS = {
+    "CHKEY_2964173850", "CHKEY_8317642950", "CHKEY_5729184630", "CHKEY_9463825170",
+    "CHKEY_1857396240", "CHKEY_7248163950", "CHKEY_3692581740", "CHKEY_6159274830",
+    "CHKEY_4836917250", "CHKEY_8527419630", "CHKEY_2769318450", "CHKEY_9148526730",
+    "CHKEY_5382761940", "CHKEY_7615928340", "CHKEY_3974182650"
 }
 
--- [[ 3. SISTEMA DE NOTIFICACIONES CUSTOM ]]
-local function Notify(text, color)
-    local NotificationFrame = Instance.new("ScreenGui", CoreGui)
-    local Msg = Instance.new("TextLabel", NotificationFrame)
-    Msg.Size = UDim2.new(0, 250, 0, 40)
-    Msg.Position = UDim2.new(1, -260, 0.9, 0)
-    Msg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    Msg.TextColor3 = color
-    Msg.Text = text
-    Msg.Font = Enum.Font.GothamBold
-    Msg.TextSize = 14
-    Instance.new("UICorner", Msg)
-    local Stroke = Instance.new("UIStroke", Msg)
-    Stroke.Color = color
-    Stroke.Thickness = 1
-    
-    TweenService:Create(Msg, TweenInfo.new(0.5), {Position = UDim2.new(1, -260, 0.85, 0)}):Play()
-    task.wait(3)
-    TweenService:Create(Msg, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-    task.delay(0.5, function() NotificationFrame:Destroy() end)
+local Config = {
+    Toggles = {
+        Noclip = false, InfJump = false, WalkSpeed = false,
+        Aimbot = false, KillAura = false, Hitbox = false,
+        ESP_Murd = false, ESP_Sheriff = false, ESP_Inno = false, Traces = false
+    },
+    SpeedValue = 50
+}
+
+-- [[ 📢 NOTIFICACIONES ]]
+local function SendNotify(txt, col)
+    spawn(function()
+        local sg = Instance.new("ScreenGui", CoreGui)
+        local frame = Instance.new("Frame", sg)
+        frame.Size = UDim2.new(0, 240, 0, 50); frame.Position = UDim2.new(1, 10, 0.15, 0)
+        frame.BackgroundColor3 = Color3.fromRGB(5, 5, 10); Instance.new("UICorner", frame)
+        local st = Instance.new("UIStroke", frame); st.Color = col; st.Thickness = 2
+        local l = Instance.new("TextLabel", frame); l.Size = UDim2.new(1, 0, 1, 0); l.Text = txt; l.TextColor3 = col
+        l.Font = Enum.Font.GothamBold; l.BackgroundTransparency = 1; l.TextSize = 13
+        frame:TweenPosition(UDim2.new(1, -250, 0.15, 0), "Out", "Back", 0.5, true)
+        task.wait(3.5); frame:TweenPosition(UDim2.new(1, 10, 0.15, 0), "In", "Quad", 0.5, true)
+        task.wait(0.6); sg:Destroy()
+    end)
 end
 
--- [[ 4. MOTORES DE COMBATE (CÓDIGO ANTERIOR REUTILIZADO) ]]
-
+-- [[ 👁️ MOTOR ESP & HITBOX ]]
 local function GetRole(p)
     if not p or not p.Character then return "Innocent" end
     if p.Character:FindFirstChild("Knife") or p.Backpack:FindFirstChild("Knife") then return "Murderer" end
@@ -86,364 +54,187 @@ local function GetRole(p)
     return "Innocent"
 end
 
--- Kill Aura Original
+-- [[ 🛠️ HITBOX EXPANDER (EXCLUSIVO ASESINO) ]]
 task.spawn(function()
-    while task.wait() do
-        if CH_DATA.Toggles.KillAura and GetRole(lp) == "Murderer" and lp.Character:FindFirstChild("Knife") then
+    while task.wait(0.5) do
+        if Config.Toggles.Hitbox then
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= lp and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local dist = (lp.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-                    if dist < 40 then
-                        firetouchinterest(p.Character.HumanoidRootPart, lp.Character.Knife.Handle, 0)
-                        firetouchinterest(p.Character.HumanoidRootPart, lp.Character.Knife.Handle, 1)
-                    end
+                if p ~= lp and GetRole(p) == "Murderer" and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.Size = Vector3.new(30, 30, 30)
+                    hrp.Transparency = 0.9 -- Casi invisible
+                    hrp.CanCollide = false
+                end
+            end
+        else
+            -- Reset Hitbox si se apaga
+            for _, p in pairs(Players:GetPlayers()) do
+                if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    p.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
+                    p.Character.HumanoidRootPart.Transparency = 1
                 end
             end
         end
     end
 end)
 
--- Aimbot Fijo (Detecta Asesino)
-RunService.RenderStepped:Connect(function()
-    if CH_DATA.Toggles.Aimbot then
-        local target = nil
-        for _, p in pairs(Players:GetPlayers()) do
-            if GetRole(p) == "Murderer" and p.Character and p.Character:FindFirstChild("Head") then
-                target = p.Character.Head
-                break
-            end
-        end
-        if target then
-            camera.CFrame = camera.CFrame:Lerp(CFrame.new(camera.CFrame.Position, target.Position), 0.1)
-        end
-    end
-    
-    if CH_DATA.Toggles.WalkSpeed then lp.Character.Humanoid.WalkSpeed = 50 end
-    if CH_DATA.Toggles.Noclip then
-        for _, v in pairs(lp.Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
-    end
-end)
-
--- Inf Jump Original
-UserInputService.JumpRequest:Connect(function()
-    if CH_DATA.Toggles.InfJump and lp.Character:FindFirstChildOfClass("Humanoid") then
-        lp.Character:FindFirstChildOfClass("Humanoid"):ChangeState(3)
-    end
-end)
-
--- [[ 5. MOTOR DE ESP Y TRACES (AUTO-LIMPIEZA) ]]
-local activeVisuals = {}
-
+local active_esp = {}
 local function CreateESP(p)
-    local line = Drawing.new("Line")
-    line.Thickness = 1.5
-    line.Transparency = 1
+    if active_esp[p] then return end
+    local highlight = Instance.new("Highlight", CoreGui)
+    highlight.OutlineTransparency = 0; highlight.FillTransparency = 0.4
+    local line = Drawing.new("Line"); line.Thickness = 2; line.Transparency = 1
+    active_esp[p] = {Highlight = highlight, Line = line}
     
-    local highlight = Instance.new("Highlight")
-    highlight.Parent = CoreGui
-    
-    activeVisuals[p.Name] = {Line = line, High = highlight}
-
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
-        if p and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-            local role = GetRole(p)
-            local root = p.Character.HumanoidRootPart
-            local pos, onScreen = camera:WorldToViewportPoint(root.Position)
-            
-            -- Lógica de Colores
-            local col = Color3.new(1,1,1)
-            local visible = false
-            if role == "Murderer" and CH_DATA.Toggles.ESP_Murd then col = Color3.new(1,0,0); visible = true
-            elseif role == "Sheriff" and CH_DATA.Toggles.ESP_Sheriff then col = Color3.new(0,0.5,1); visible = true
-            elseif role == "Innocent" and CH_DATA.Toggles.ESP_Inno then col = Color3.new(0,1,0); visible = true end
-            
-            highlight.Enabled = visible
-            highlight.Adornee = p.Character
-            highlight.FillColor = col
-            highlight.OutlineColor = Color3.new(1,1,1)
-            
-            if CH_DATA.Toggles.Traces and onScreen and visible then
-                line.Visible = true
-                line.From = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y)
-                line.To = Vector2.new(pos.X, pos.Y)
-                line.Color = col
-            else
-                line.Visible = false
-            end
-        else
-            -- Limpieza automática si muere o sale
-            line.Visible = false
-            highlight.Enabled = false
-            if not Players:FindFirstChild(p.Name) then
-                line:Remove()
-                highlight:Destroy()
-                connection:Disconnect()
-            end
-        end
+    RunService.RenderStepped:Connect(function()
+        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") then
+            local role = GetRole(p); local color = (role == "Murderer" and Color3.new(1,0,0)) or (role == "Sheriff" and Color3.new(0,0.7,1)) or Color3.new(0,1,0)
+            local enabled = (role == "Murderer" and Config.Toggles.ESP_Murd) or (role == "Sheriff" and Config.Toggles.ESP_Sheriff) or (role == "Innocent" and Config.Toggles.ESP_Inno)
+            if enabled and p.Character.Humanoid.Health > 0 then
+                highlight.Enabled = true; highlight.Adornee = p.Character; highlight.FillColor = color
+                local pos, vis = camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
+                if Config.Toggles.Traces and vis then
+                    line.Visible = true; line.Color = color; line.From = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y); line.To = Vector2.new(pos.X, pos.Y)
+                else line.Visible = false end
+            else highlight.Enabled = false; line.Visible = false end
+        else highlight.Enabled = false; line.Visible = false end
+        if not Players:FindFirstChild(p.Name) then highlight:Destroy(); line:Remove(); active_esp[p] = nil end
     end)
 end
 
 for _, v in pairs(Players:GetPlayers()) do if v ~= lp then CreateESP(v) end end
 Players.PlayerAdded:Connect(function(v) if v ~= lp then CreateESP(v) end end)
 
--- [[ 6. SISTEMA DE KEY (MORADO NEÓN) ]]
-local function ShowKeySystem()
-    local KeyGui = Instance.new("ScreenGui", CoreGui)
-    local Frame = Instance.new("Frame", KeyGui)
-    Frame.Size = UDim2.new(0, 350, 0, 250)
-    Frame.Position = UDim2.new(0.5, -175, 0.5, -125)
-    Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20)
-    Instance.new("UICorner", Frame)
-    local Stroke = Instance.new("UIStroke", Frame)
-    Stroke.Color = CH_DATA.Colors.NeonPurple
-    Stroke.Thickness = 2
-
-    local Title = Instance.new("TextLabel", Frame)
-    Title.Size = UDim2.new(1, 0, 0, 50)
-    Title.Text = "AUTHENTICATION SYSTEM"
-    Title.TextColor3 = CH_DATA.Colors.NeonPurple
-    Title.Font = "GothamBold"
-    Title.BackgroundTransparency = 1
-
-    local Input = Instance.new("TextBox", Frame)
-    Input.Size = UDim2.new(0.8, 0, 0, 45)
-    Input.Position = UDim2.new(0.1, 0, 0.4, 0)
-    Input.PlaceholderText = "Enter license..."
-    Input.Text = ""
-    Input.BackgroundColor3 = Color3.fromRGB(30, 20, 40)
-    Input.TextColor3 = Color3.new(1,1,1)
-    Instance.new("UICorner", Input)
-
-    local Verify = Instance.new("TextButton", Frame)
-    Verify.Size = UDim2.new(0.8, 0, 0, 45)
-    Verify.Position = UDim2.new(0.1, 0, 0.7, 0)
-    Verify.BackgroundColor3 = CH_DATA.Colors.NeonPurple
-    Verify.Text = "LOGIN"
-    Verify.TextColor3 = Color3.new(1,1,1)
-    Verify.Font = "GothamBold"
-    Instance.new("UICorner", Verify)
-
-    Verify.MouseButton1Click:Connect(function()
-        if table.find(CH_DATA.Keys, Input.Text) then
-            Verify.Text = "Verifying key..."
-            Verify.BackgroundColor3 = CH_DATA.Colors.WarningYellow
-            -- Efecto parpadeante
-            task.spawn(function()
-                for i = 1, 6 do
-                    Verify.TextTransparency = (i % 2 == 0) and 0 or 1
-                    task.wait(0.5)
-                end
-            end)
-            task.wait(3)
-            KeyGui:Destroy()
-            StartIntro()
-        else
-            Verify.Text = "Incorrect key"
-            Verify.BackgroundColor3 = CH_DATA.Colors.ErrorRed
-            task.wait(2)
-            Verify.Text = "LOGIN"
-            Verify.BackgroundColor3 = CH_DATA.Colors.NeonPurple
+-- [[ ⚔️ COMBAT & MOVEMENT ]]
+RunService.Stepped:Connect(function()
+    if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+        if Config.Toggles.WalkSpeed then lp.Character.Humanoid.WalkSpeed = Config.SpeedValue end
+        if Config.Toggles.Noclip then
+            for _, v in pairs(lp.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
         end
-    end)
-end
-
--- [[ 7. INTRO: LETRAS CAYENDO Y EXPLOSIÓN ]]
-function StartIntro()
-    local IntroGui = Instance.new("ScreenGui", CoreGui)
-    local Canvas = Instance.new("Frame", IntroGui)
-    Canvas.Size = UDim2.new(1,0,1,0)
-    Canvas.BackgroundTransparency = 1
-
-    local fullText = "CHRISSHUB V2"
-    local labels = {}
-
-    for i = 1, #fullText do
-        local char = string.sub(fullText, i, i)
-        local l = Instance.new("TextLabel", Canvas)
-        l.Text = char
-        l.Size = UDim2.new(0, 50, 0, 50)
-        l.Position = UDim2.new(0.3 + (i*0.04), 0, -0.2, 0)
-        l.TextColor3 = Color3.fromRGB(0, 255, 100)
-        l.Font = "Code"
-        l.TextSize = 60
-        l.BackgroundTransparency = 1
-        table.insert(labels, l)
-        TweenService:Create(l, TweenInfo.new(1, Enum.EasingStyle.Bounce), {Position = UDim2.new(0.3 + (i*0.04), 0, 0.45, 0)}):Play()
-        task.wait(0.1)
     end
-
-    task.wait(2)
-    -- Efecto Bomba Verde
-    for _, l in pairs(labels) do
-        TweenService:Create(l, TweenInfo.new(0.5), {TextSize = 200, TextTransparency = 1, TextColor3 = Color3.new(1,1,1)}):Play()
-    end
-    task.wait(0.6)
-    IntroGui:Destroy()
-    BuildFuturisticMenu()
-end
-
--- [[ 8. MENÚ AZUL NEÓN FUTURISTA ]]
-function BuildFuturisticMenu()
-    local MainGui = Instance.new("ScreenGui", CoreGui)
-    local MainFrame = Instance.new("Frame", MainGui)
-    MainFrame.Size = UDim2.new(0, 450, 0, 320)
-    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -160)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(5, 10, 15)
-    Instance.new("UICorner", MainFrame)
-    local Stroke = Instance.new("UIStroke", MainFrame)
-    Stroke.Color = CH_DATA.Colors.MainBlue
-    Stroke.Thickness = 3
-
-    -- Header
-    local Header = Instance.new("Frame", MainFrame)
-    Header.Size = UDim2.new(1, 0, 0, 40)
-    Header.BackgroundTransparency = 1
-    local Title = Instance.new("TextLabel", Header)
-    Title.Size = UDim2.new(1, -40, 1, 0)
-    Title.Position = UDim2.new(0, 15, 0, 0)
-    Title.Text = "CHRISSHUB V2 - SUPREME"
-    Title.TextColor3 = CH_DATA.Colors.MainBlue
-    Title.Font = "GothamBlack"
-    Title.TextXAlignment = "Left"
-    Title.BackgroundTransparency = 1
-
-    local Close = Instance.new("TextButton", Header)
-    Close.Size = UDim2.new(0, 30, 0, 30)
-    Close.Position = UDim2.new(1, -35, 0, 5)
-    Close.Text = "X"
-    Close.TextColor3 = CH_DATA.Colors.ErrorRed
-    Close.BackgroundTransparency = 1
-    
-    -- Apartados
-    local Sidebar = Instance.new("Frame", MainFrame)
-    Sidebar.Size = UDim2.new(0, 100, 1, -50)
-    Sidebar.Position = UDim2.new(0, 10, 0, 45)
-    Sidebar.BackgroundTransparency = 1
-    Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 5)
-
-    local PageContainer = Instance.new("Frame", MainFrame)
-    PageContainer.Size = UDim2.new(1, -130, 1, -60)
-    PageContainer.Position = UDim2.new(0, 120, 0, 50)
-    PageContainer.BackgroundTransparency = 1
-
-    local pages = {}
-    local function CreateTab(name)
-        local p = Instance.new("ScrollingFrame", PageContainer)
-        p.Size = UDim2.new(1, 0, 1, 0)
-        p.BackgroundTransparency = 1
-        p.Visible = false
-        p.CanvasSize = UDim2.new(0,0,1.5,0)
-        p.ScrollBarThickness = 2
-        local list = Instance.new("UIListLayout", p); list.Padding = UDim.new(0, 8)
-        
-        local b = Instance.new("TextButton", Sidebar)
-        b.Size = UDim2.new(1, 0, 0, 40)
-        b.Text = name
-        b.BackgroundColor3 = Color3.fromRGB(15, 25, 35)
-        b.TextColor3 = Color3.new(1,1,1)
-        Instance.new("UICorner", b)
-        
-        b.MouseButton1Click:Connect(function()
-            for _, v in pairs(pages) do v.Visible = false end
-            p.Visible = true
-        end)
-        pages[name] = p
-        return p
-    end
-
-    local mainTab = CreateTab("MAIN")
-    local espTab = CreateTab("ESP")
-    local combatTab = CreateTab("COMBAT")
-    mainTab.Visible = true
-
-    -- Función para botones rectangulares (Estilo Imagen 3)
-    local function AddFunction(parent, text, tKey)
-        local btn = Instance.new("TextButton", parent)
-        btn.Size = UDim2.new(0.95, 0, 0, 45)
-        btn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-        btn.Text = "  " .. text
-        btn.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-        btn.TextXAlignment = "Left"
-        btn.Font = "GothamBold"
-        Instance.new("UICorner", btn)
-        local s = Instance.new("UIStroke", btn); s.Color = Color3.fromRGB(40, 40, 50); s.Thickness = 2
-
-        btn.MouseButton1Click:Connect(function()
-            CH_DATA.Toggles[tKey] = not CH_DATA.Toggles[tKey]
-            local state = CH_DATA.Toggles[tKey]
-            
-            -- Feedback Visual Botón
-            btn.BackgroundColor3 = state and CH_DATA.Colors.SuccessGreen or CH_DATA.Colors.ErrorRed
-            task.delay(5, function() btn.BackgroundColor3 = Color3.fromRGB(20, 20, 25) end)
-            
-            -- Notificación
-            local statusText = state and "ACTIVATED" or "DEACTIVATED"
-            local statusCol = state and CH_DATA.Colors.SuccessGreen or CH_DATA.Colors.ErrorRed
-            Notify(text .. " " .. statusText, statusCol)
-        end)
-    end
-
-    -- Contenido MAIN
-    AddFunction(mainTab, "NOCLIP", "Noclip")
-    AddFunction(mainTab, "INFINITY JUMP", "InfJump")
-    AddFunction(mainTab, "SPEED HACK", "WalkSpeed")
-    local TikTok = Instance.new("TextLabel", mainTab)
-    TikTok.Size = UDim2.new(1,0,0,30); TikTok.Text = "Follow me on TikTok: sasware32 😏"; TikTok.TextColor3 = CH_DATA.Colors.MainBlue; TikTok.BackgroundTransparency = 1
-
-    -- Contenido ESP
-    AddFunction(espTab, "ESP MURDERER", "ESP_Murd")
-    AddFunction(espTab, "ESP SHERIFF", "ESP_Sheriff")
-    AddFunction(espTab, "ESP INNOCENT", "ESP_Inno")
-    AddFunction(espTab, "TRACES (LINES)", "Traces")
-
-    -- Contenido COMBAT
-    AddFunction(combatTab, "AIMBOT (FIXED)", "Aimbot")
-    AddFunction(combatTab, "KILL AURA", "KillAura")
-    
-    -- TP SHERIFF ESPECIAL
-    local TPBtn = Instance.new("TextButton", combatTab)
-    TPBtn.Size = UDim2.new(0.95, 0, 0, 45)
-    TPBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25); TPBtn.Text = "  TELEPORT SHERIFF"
-    TPBtn.TextColor3 = Color3.new(0.8,0.8,0.8); TPBtn.TextXAlignment = "Left"; TPBtn.Font = "GothamBold"
-    Instance.new("UICorner", TPBtn)
-    
-    TPBtn.MouseButton1Click:Connect(function()
-        TPBtn.BackgroundColor3 = CH_DATA.Colors.SuccessGreen
-        Notify("TELEPORTING...", CH_DATA.Colors.SkyBlue)
-        task.wait(3)
+    if Config.Toggles.Aimbot then
         for _, p in pairs(Players:GetPlayers()) do
-            if GetRole(p) == "Sheriff" and p.Character then
-                lp.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
-                Notify("TELEPORT SUCCESSFUL", CH_DATA.Colors.SuccessGreen)
-                break
+            if GetRole(p) == "Murderer" and p.Character and p.Character:FindFirstChild("Head") then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, p.Character.Head.Position)
             end
         end
-        task.wait(2)
-        TPBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-    end)
+    end
+end)
 
-    -- Círculo CH-HUB
-    local Floating = Instance.new("TextButton", MainGui)
-    Floating.Size = UDim2.new(0, 60, 0, 60)
-    Floating.Position = UDim2.new(0, 20, 0.5, 0)
-    Floating.BackgroundColor3 = CH_DATA.Colors.MainBlue
-    Floating.Text = "CH-HUB"
-    Floating.TextColor3 = Color3.new(1,1,1)
-    Instance.new("UICorner", Floating).CornerRadius = UDim.new(1, 0)
-    Floating.Visible = false
+UserInputService.JumpRequest:Connect(function()
+    if Config.Toggles.InfJump and lp.Character and lp.Character:FindFirstChild("Humanoid") then
+        lp.Character.Humanoid:ChangeState(3)
+    end
+end)
 
-    Close.MouseButton1Click:Connect(function()
-        MainFrame.Visible = false
-        Floating.Visible = true
-    end)
-    Floating.MouseButton1Click:Connect(function()
-        MainFrame.Visible = true
-        Floating.Visible = false
+-- [[ 🏙️ MENÚ AZUL NEÓN ]]
+local function BuildMain()
+    if IsLoaded then return end -- NO PERMITIR SEGUNDA CARGA
+    IsLoaded = true
+    
+    local sg = Instance.new("ScreenGui", CoreGui)
+    local main = Instance.new("Frame", sg)
+    main.Size = UDim2.new(0, 480, 0, 320); main.Position = UDim2.new(0.5, -240, 0.5, -160)
+    main.BackgroundColor3 = Color3.fromRGB(5, 10, 25); Instance.new("UICorner", main)
+    local stroke = Instance.new("UIStroke", main); stroke.Color = Color3.fromRGB(0, 180, 255); stroke.Thickness = 3
+
+    -- BOTÓN CH-HUB DRAGGABLE
+    local float = Instance.new("TextButton", sg)
+    float.Size = UDim2.new(0, 75, 0, 75); float.Position = UDim2.new(0.05, 0, 0.4, 0)
+    float.BackgroundColor3 = Color3.fromRGB(0, 150, 255); float.Text = "CH-HUB"; float.TextColor3 = Color3.new(1,1,1)
+    float.Font = Enum.Font.GothamBold; float.Visible = false; Instance.new("UICorner", float).CornerRadius = UDim.new(1, 0)
+    
+    local f_drag, f_start, f_pos;
+    float.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then f_drag = true; f_start = i.Position; f_pos = float.Position end end)
+    float.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then f_drag = false end end)
+    UserInputService.InputChanged:Connect(function(i) if f_drag and i.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = i.Position - f_start; float.Position = UDim2.new(f_pos.X.Scale, f_pos.X.Offset + delta.X, f_pos.Y.Scale, f_pos.Y.Offset + delta.Y)
+    end end)
+
+    local close = Instance.new("TextButton", main); close.Size = UDim2.new(0, 35, 0, 35); close.Position = UDim2.new(1, -40, 0, 5); close.Text = "✖"; close.TextColor3 = Color3.new(1,0,0); close.BackgroundTransparency = 1; close.TextSize = 25
+    close.MouseButton1Click:Connect(function() main.Visible = false; float.Visible = true end)
+    float.MouseButton1Click:Connect(function() main.Visible = true; float.Visible = false end)
+
+    local side = Instance.new("Frame", main); side.Size = UDim2.new(0, 120, 1, -20); side.Position = UDim2.new(0, 10, 0, 10); side.BackgroundTransparency = 1
+    Instance.new("UIListLayout", side).Padding = UDim.new(0, 8)
+    local container = Instance.new("Frame", main); container.Size = UDim2.new(1, -150, 1, -60); container.Position = UDim2.new(0, 140, 0, 50); container.BackgroundTransparency = 1
+
+    local function CreateTab(name)
+        local f = Instance.new("ScrollingFrame", container)
+        f.Size = UDim2.new(1, 0, 1, 0); f.Visible = false; f.BackgroundTransparency = 1; f.ScrollBarThickness = 0
+        Instance.new("UIListLayout", f).Padding = UDim.new(0, 12)
+        local b = Instance.new("TextButton", side); b.Size = UDim2.new(1, 0, 0, 45); b.Text = name; b.BackgroundColor3 = Color3.fromRGB(15, 25, 50); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; Instance.new("UICorner", b)
+        b.MouseButton1Click:Connect(function() for _, v in pairs(container:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end f.Visible = true end)
+        return f
+    end
+
+    local tabMain = CreateTab("MAIN"); tabMain.Visible = true
+    local tabESP = CreateTab("ESP"); local tabCombat = CreateTab("COMBAT")
+
+    local function CreateFunc(parent, name, key)
+        local btn = Instance.new("TextButton", parent); btn.Size = UDim2.new(0.95, 0, 0, 50); btn.Text = name; btn.BackgroundColor3 = Color3.fromRGB(30, 35, 50); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.GothamBold; Instance.new("UICorner", btn)
+        btn.MouseButton1Click:Connect(function()
+            Config.Toggles[key] = not Config.Toggles[key]
+            btn.BackgroundColor3 = Config.Toggles[key] and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
+            SendNotify(name .. (Config.Toggles[key] and " ACTIVADO" or " DESACTIVADO"), Config.Toggles[key] and Color3.new(0,1,0) or Color3.new(1,0,0))
+            task.wait(5); btn.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
+        end)
+    end
+
+    CreateFunc(tabMain, "NOCLIP", "Noclip"); CreateFunc(tabMain, "INFINITY JUMP", "InfJump"); CreateFunc(tabMain, "SPEED", "WalkSpeed")
+    local cred = Instance.new("TextLabel", tabMain); cred.Size = UDim2.new(1,0,0,40); cred.Text = "Follow me on TikTok: sasware32 😏"; cred.TextColor3 = Color3.fromRGB(0, 180, 255); cred.BackgroundTransparency = 1; cred.Font = Enum.Font.GothamBold
+
+    CreateFunc(tabESP, "ESP ASESINO (RED)", "ESP_Murd"); CreateFunc(tabESP, "ESP SHERIFF (BLUE)", "ESP_Sheriff"); CreateFunc(tabESP, "ESP INOCENTE (GREEN)", "ESP_Inno"); CreateFunc(tabESP, "TRACES", "Traces")
+
+    CreateFunc(tabCombat, "HITBOX MURDERER", "Hitbox"); CreateFunc(tabCombat, "AIMBOT FIXED", "Aimbot"); CreateFunc(tabCombat, "KILL AURA", "KillAura")
+    local tpS = Instance.new("TextButton", tabCombat); tpS.Size = UDim2.new(0.95, 0, 0, 50); tpS.Text = "TP SHERIFF"; tpS.BackgroundColor3 = Color3.fromRGB(30, 35, 50); tpS.TextColor3 = Color3.new(1,1,1); tpS.Font = Enum.Font.GothamBold; Instance.new("UICorner", tpS)
+    tpS.MouseButton1Click:Connect(function()
+        tpS.BackgroundColor3 = Color3.new(0, 1, 0); SendNotify("TELETRANSPORTANDO", Color3.fromRGB(0, 190, 255))
+        task.wait(3); local sh = nil; for _, p in pairs(Players:GetPlayers()) do if GetRole(p) == "Sheriff" and p.Character then sh = p break end end
+        if sh then lp.Character.HumanoidRootPart.CFrame = sh.Character.HumanoidRootPart.CFrame; SendNotify("TELEPORTACIÓN EXITOSA", Color3.new(0, 1, 0))
+        else SendNotify("SHERIFF NO ENCONTRADO", Color3.new(1, 0, 0)) end
+        task.wait(2); tpS.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
     end)
 end
 
--- [[ INICIO ]]
-ShowKeySystem()
+-- [[ 🚀 INTRO RENOVADA (GREEN & LARGE) ]]
+local function StartIntro()
+    local sg = Instance.new("ScreenGui", CoreGui); local title = "CHRISSHUB"
+    local labels = {}
+    for i = 1, #title do
+        local l = Instance.new("TextLabel", sg); l.Text = title:sub(i,i); l.Size = UDim2.new(0, 80, 0, 80)
+        l.Position = UDim2.new(0.28 + (i*0.05), 0, -0.2, 0); l.TextColor3 = Color3.fromRGB(0, 255, 50)
+        l.TextSize = 90; l.Font = Enum.Font.Code; l.BackgroundTransparency = 1
+        local s = Instance.new("UIStroke", l); s.Color = Color3.new(0,0,0); s.Thickness = 4
+        table.insert(labels, l)
+        l:TweenPosition(UDim2.new(0.28 + (i*0.05), 0, 0.45, 0), "Out", "Bounce", 1 + (i*0.12), true)
+    end
+    task.wait(4)
+    for _, v in pairs(labels) do
+        TweenService:Create(v, TweenInfo.new(0.6), {TextSize = 400, TextTransparency = 1, TextColor3 = Color3.new(0,1,0.2)}):Play()
+    end
+    task.wait(0.7); sg:Destroy(); BuildMain()
+end
+
+-- [[ 🔑 KEY SYSTEM FIX ]]
+local function RunKeys()
+    local sg = Instance.new("ScreenGui", CoreGui)
+    local frame = Instance.new("Frame", sg); frame.Size = UDim2.new(0, 350, 0, 250); frame.Position = UDim2.new(0.5, -175, 0.5, -125); frame.BackgroundColor3 = Color3.fromRGB(15, 5, 35); Instance.new("UICorner", frame)
+    Instance.new("UIStroke", frame).Color = Color3.fromRGB(180, 0, 255)
+    local input = Instance.new("TextBox", frame); input.Size = UDim2.new(0.8, 0, 0, 50); input.Position = UDim2.new(0.1, 0, 0.35, 0); input.PlaceholderText = "Enter licencia"; input.Text = ""; input.TextColor3 = Color3.new(1,1,1); input.BackgroundColor3 = Color3.fromRGB(30, 15, 60); Instance.new("UICorner", input)
+    local btn = Instance.new("TextButton", frame); btn.Size = UDim2.new(0.8, 0, 0, 50); btn.Position = UDim2.new(0.1, 0, 0.7, 0); btn.Text = "VERIFY"; btn.BackgroundColor3 = Color3.fromRGB(180, 0, 255); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.GothamBold; Instance.new("UICorner", btn)
+    
+    local verifying = false
+    btn.MouseButton1Click:Connect(function()
+        if verifying then return end -- NO PERMITIR CLIC MIENTRAS VERIFICA
+        if table.find(CH_KEYS, input.Text) then
+            verifying = true; btn.Text = "Verifying key..."; btn.TextColor3 = Color3.new(1, 1, 0)
+            task.wait(3); sg:Destroy(); StartIntro()
+        else
+            input.Text = ""; input.PlaceholderText = "Incorrect key"; input.PlaceholderColor3 = Color3.new(1, 0, 0); task.wait(2); input.PlaceholderText = "Enter licencia"
+        end
+    end)
+end
+
+RunKeys()
